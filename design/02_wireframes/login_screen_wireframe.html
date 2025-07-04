@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic AI - 로그인 화면</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .wireframe-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .device-frame {
+            border: 8px solid #333;
+            border-radius: 20px;
+            background: #333;
+            overflow: hidden;
+        }
+        
+        .desktop {
+            width: 400px;
+            height: 600px;
+        }
+        
+        .mobile {
+            width: 280px;
+            height: 500px;
+            border-radius: 25px;
+        }
+        
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .mobile .login-card {
+            padding: 30px 25px;
+            border-radius: 12px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .mobile .login-header {
+            margin-bottom: 25px;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: #2563eb;
+            border-radius: 12px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .mobile .logo {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .login-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+        
+        .mobile .login-title {
+            font-size: 20px;
+        }
+        
+        .login-subtitle {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .mobile .login-subtitle {
+            font-size: 13px;
+        }
+        
+        .social-login {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .social-btn {
+            padding: 12px 16px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .mobile .social-btn {
+            padding: 10px 14px;
+            font-size: 13px;
+            gap: 10px;
+        }
+        
+        .social-btn:hover {
+            background: #f8f9fa;
+            border-color: #ddd;
+            transform: translateY(-1px);
+        }
+        
+        .social-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .mobile .social-icon {
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+        }
+        
+        .google { background: #4285f4; }
+        .github { background: #333; }
+        .microsoft { background: #0066cc; }
+        
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .mobile .divider {
+            margin: 18px 0;
+            font-size: 13px;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e9ecef;
+            z-index: 1;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .mobile .form-group {
+            margin-bottom: 14px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .mobile .form-label {
+            font-size: 13px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .mobile .form-input {
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+        
+        .form-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .mobile .checkbox-group {
+            margin-bottom: 18px;
+        }
+        
+        .checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #2563eb;
+            color: white;
+            font-size: 10px;
+        }
+        
+        .checkbox-label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .mobile .checkbox-label {
+            font-size: 13px;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 12px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .mobile .btn-primary {
+            padding: 11px 14px;
+            font-size: 13px;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .mobile .signup-link {
+            margin-top: 18px;
+            font-size: 13px;
+        }
+        
+        .signup-link a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .device-label {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 600;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .features-note {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            color: white;
+            max-width: 600px;
+        }
+        
+        .features-note h4 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .features-note ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .features-note li {
+            margin-bottom: 5px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="wireframe-container">
+        <!-- Desktop Login -->
+        <div>
+            <div class="device-frame desktop">
+                <div class="login-container">
+                    <div class="login-card">
+                        <div class="login-header">
+                            <div class="logo">🤖</div>
+                            <h2 class="login-title">AI Assistant</h2>
+                            <p class="login-subtitle">절차 기반 인공지능 어시스턴트에<br>오신 것을 환영합니다</p>
+                        </div>
+                        
+                        <div class="social-login">
+                            <button class="social-btn">
+                                <div class="social-icon google">G</div>
+                                Google로 로그인
+                            </button>
+                            <button class="social-btn">
+                                <div class="social-icon github">🐙</div>
+                                GitHub로 로그인
+                            </button>
+                            <button class="social-btn">
+                                <div class="social-icon microsoft">M</div>
+                                Microsoft로 로그인
+                            </button>
+                        </div>
+                        
+                        <div class="divider">
+                            <span>또는</span>
+                        </div>
+                        
+                        <form>
+                            <div class="form-group">
+                                <label class="form-label">이메일</label>
+                                <input type="email" class="form-input" placeholder="이메일을 입력하세요" />
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">비밀번호</label>
+                                <input type="password" class="form-input" placeholder="비밀번호를 입력하세요" />
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                <div class="checkbox">✓</div>
+                                <label class="checkbox-label">자동 로그인</label>
+                            </div>
+                            
+                            <button type="submit" class="btn-primary">로그인</button>
+                        </form>
+                        
+                        <div class="signup-link">
+                            계정이 없으신가요? <a href="#">회원가입</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="device-label">Desktop (400px)</div>
+        </div>
+
+        <!-- Mobile Login -->
+        <div>
+            <div class="device-frame mobile">
+                <div class="login-container">
+                    <div class="login-card">
+                        <div class="login-header">
+                            <div class="logo">🤖</div>
+                            <h2 class="login-title">AI Assistant</h2>
+                            <p class="login-subtitle">절차 기반 AI 어시스턴트</p>
+                        </div>
+                        
+                        <div class="social-login">
+                            <button class="social-btn">
+                                <div class="social-icon google">G</div>
+                                Google 로그인
+                            </button>
+                            <button class="social-btn">
+                                <div class="social-icon github">🐙</div>
+                                GitHub 로그인
+                            </button>
+                            <button class="social-btn">
+                                <div class="social-icon microsoft">M</div>
+                                Microsoft 로그인
+                            </button>
+                        </div>
+                        
+                        <div class="divider">
+                            <span>또는</span>
+                        </div>
+                        
+                        <form>
+                            <div class="form-group">
+                                <label class="form-label">이메일</label>
+                                <input type="email" class="form-input" placeholder="이메일 입력" />
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">비밀번호</label>
+                                <input type="password" class="form-input" placeholder="비밀번호 입력" />
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                <div class="checkbox">✓</div>
+                                <label class="checkbox-label">자동 로그인</label>
+                            </div>
+                            
+                            <button type="submit" class="btn-primary">로그인</button>
+                        </form>
+                        
+                        <div class="signup-link">
+                            <a href="#">회원가입</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="device-label">Mobile (280px)</div>
+        </div>
+    </div>
+
+    <div class="features-note">
+        <h4>🔐 로그인 화면 주요 특징</h4>
+        <ul>
+            <li><strong>소셜 로그인 우선:</strong> Google, GitHub, Microsoft 간편 로그인</li>
+            <li><strong>자동 로그인:</strong> 기본 체크되어 세션 유지</li>
+            <li><strong>그라데이션 배경:</strong> 프리미엄한 느낌의 시각적 디자인</li>
+            <li><strong>반응형 디자인:</strong> 데스크톱과 모바일 최적화</li>
+            <li><strong>로그인 성공 시:</strong> 메인 채팅 화면으로 자동 리다이렉트</li>
+            <li><strong>세션 관리:</strong> 자동 로그인 체크 시 토큰 기반 세션 유지</li>
+        </ul>
+    </div>
+
+    <script>
+        // 간단한 인터랙션 시뮬레이션
+        document.addEventListener('DOMContentLoaded', function() {
+            const socialBtns = document.querySelectorAll('.social-btn');
+            const primaryBtns = document.querySelectorAll('.btn-primary');
+            
+            socialBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const provider = this.textContent.trim().split(' ')[0];
+                    alert(`${provider} 로그인 진행 중...`);
+                });
+            });
+            
+            primaryBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('이메일 로그인 진행 중...');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

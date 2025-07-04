@@ -1,0 +1,47 @@
+services:
+  backend-test:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: wsap-backend-test
+    command: ["sh", "./scripts/test.sh"]
+    volumes:
+      - ../backend:/app
+    env_file:
+      - ./.env
+    environment:
+      # 테스트 환경에서는 DATABASE_URL을 테스트 DB로 설정
+      DATABASE_URL: "postgresql+asyncpg://wsap_user:wsap_password@postgres:5432/wsap_test_db"
+      ENVIRONMENT: "test"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wsap-network
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: wsap-postgres-test
+    env_file:
+      - ./.env
+    ports:
+      - "5433:5432" # 로컬 5432 포트와 충돌을 피하기 위해 5433으로 변경
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init-postgres.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - wsap-network
+    restart: unless-stopped
+
+networks:
+  wsap-network:
+    driver: bridge
+
+volumes:
+  postgres-test-data: 

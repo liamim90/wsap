@@ -1,0 +1,83 @@
+---
+description: Qdrant collection setup and search optimization guide for voyage-3-large embeddings
+alwaysApply: false
+globs: **/*.ts, **/*.py
+---
+
+# Qdrant Usage Rules for voyage-3-large
+
+1. **Default Embedding Dimension**
+
+   * Use **1024** dimensions for voyage-3-large to balance performance and storage.
+
+2. **Distance Metric**
+
+   * Set `vector_config.distance` to **Dot** for faster operations (equivalent to Cosine for L2-normalized embeddings).
+
+3. **HNSW Index Tuning**
+
+   ```ts
+   // Index build configuration
+   hnsw_config: {
+     m: 16,             // edges per node for 1024-d embeddings
+     ef_construct: 256, // index build quality
+   },
+
+   // Search configuration
+   search_params: {
+     hnsw_ef: 128       // default search recall/speed trade-off
+   }
+   ```
+
+   * Increase `hnsw_ef` to **256** for higher recall if needed.
+
+4. **Quantization Settings**
+
+   * Choose one:
+
+     * **Float**: highest precision (default)
+     * **Scalar (int8)**: lower memory, minimal quality loss
+     * **Product**: maximum storage reduction
+   * Test retrieval quality on sample data before enabling quantization.
+
+5. **Batch Upserts & On-Disk Mode**
+
+   * Upsert vectors in batches of **500–1000**.
+   * For collections > 1 million points, enable `vectors_config.on_disk: true` to cap RAM usage:
+
+     ```ts
+     await client.upsert({
+       collection_name: "my_collection",
+       points: points,
+       vectors_config: { on_disk: true }
+     });
+     ```
+
+6. **Embedding Input Parameters**
+
+   * Use `input_type: "document"` when indexing corpus.
+   * Use `input_type: "query"` when embedding user queries.
+   * Ensure each text chunk ≤ 120 000 tokens.
+
+7. **Filtering & Hybrid Search**
+
+   ```ts
+   await client.search({
+     collection_name: "my_collection",
+     query: { vector: queryVec, top: 10 },
+     filter: { must: [{ key: "category", match: { value: "news" } }] }
+   });
+   ```
+
+   * Combine `must`/`should` clauses for hybrid queries.
+
+8. **Monitoring & Maintenance**
+
+   * Track `points_count`, `index_build_time`, `search_time`, `memory_usage`.
+   * When data grows > 50%, rebuild HNSW index and adjust `ef_construct`.
+
+9. **Edge Case Handling**
+
+   * Use `optimizer_config.indexing_threshold: 0` to defer HNSW builds during high-ingestion workloads.
+   * Validate `m ≥ 1` to avoid invalid HNSW configuration.
+

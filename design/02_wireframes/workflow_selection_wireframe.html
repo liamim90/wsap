@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>워크플로우 선택 인터페이스</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .demo-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-box {
+            flex: 1;
+            min-width: 300px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+        }
+        
+        /* 워크플로우 드롭다운 스타일 */
+        .workflow-selector {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .workflow-selector:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        
+        .workflow-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+            margin-top: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .workflow-dropdown-header {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 500;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .workflow-option {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        
+        .workflow-option:hover {
+            background: #f8f9fa;
+        }
+        
+        .workflow-option.selected {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .workflow-option:last-child {
+            border-bottom: none;
+        }
+        
+        .workflow-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .workflow-info {
+            flex: 1;
+        }
+        
+        .workflow-name {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .workflow-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.3;
+        }
+        
+        .workflow-tag {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 500;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .tag-popular {
+            background: #ff9800;
+        }
+        
+        .tag-new {
+            background: #28a745;
+        }
+        
+        .tag-beta {
+            background: #6f42c1;
+        }
+        
+        /* / 커맨드 자동완성 스타일 */
+        .input-demo {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .command-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .command-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        
+        .autocomplete-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .autocomplete-item.highlighted {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-icon {
+            font-size: 16px;
+            width: 18px;
+            text-align: center;
+        }
+        
+        .autocomplete-content {
+            flex: 1;
+        }
+        
+        .autocomplete-title {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .autocomplete-subtitle {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .keyboard-hint {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-family: monospace;
+            margin-left: auto;
+            color: #666;
+        }
+        
+        .highlight {
+            background: #ffeb3b;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+        
+        .tip-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+        
+        .tip-box strong {
+            color: #0d47a1;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .feature-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .feature-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .comparison-table td {
+            font-size: 14px;
+        }
+        
+        .pro {
+            color: #28a745;
+        }
+        
+        .con {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 30px; color: #333;">워크플로우 선택 인터페이스</h1>
+        
+        <!-- 드롭다운 방식 -->
+        <div class="section">
+            <h2 class="section-title">🔽 방식 1: 드롭다운 선택기</h2>
+            
+            <div class="demo-container">
+                <div class="demo-box">
+                    <h4 style="margin-bottom: 15px;">워크플로우 선택 드롭다운</h4>
+                    <div style="position: relative;">
+                        <select class="workflow-selector" onchange="showDropdown()">
+                            <option>워크플로우를 선택하세요...</option>
+                        </select>
+                        
+                        <!-- 드롭다운 옵션들 (평상시에는 숨김) -->
+                        <div class="workflow-dropdown" id="workflowDropdown" style="display: none;">
+                            <div class="workflow-dropdown-header">
+                                사용 가능한 워크플로우
+                            </div>
+                            
+                            <div class="workflow-option">
+                                <span class="workflow-icon">🔄</span>
+                                <div class="workflow-info">
+                                    <div class="workflow-name">일반 채팅 모드</div>
+                                    <div class="workflow-description">자유로운 대화 및 질문응답</div>
+                                </div>
+                            </div>
+                            
+                            <div class="workflow-option selected">
+                                <span class="workflow-icon">⚡</span>
+                                <div class="workflow-info">
+                                    <div class="workflow-name">HR 채용 프로세스</div>
+                                    <div class="workflow-description">채용 공고 → 지원자 선별 → 면접 일정 → 합격 처리</div>
+                                </div>
+                                <span class="workflow-tag tag-popular">인기</span>
+                            </div>
+                            
+                            <div class="workflow-option">
+                                <span class="workflow-icon">📊</span>
+                                <div class="workflow-info">
+                                    <div class="workflow-name">데이터 분석 워크플로우</div>
+                                    <div class="workflow-description">CSV 분석 → 인사이트 도출 → 시각화 → 보고서 생성</div>
+                                </div>
+                            </div>
+                            
+                            <div class="workflow-option">
+                                <span class="workflow-icon">📧</span>
+                                <div class="workflow-info">
+                                    <div class="workflow-name">이메일 작성 워크플로우</div>
+                                    <div class="workflow-description">목적 파악 → 내용 작성 → 톤 조정 → 검토 및 발송</div>
+                                </div>
+                            </div>
+                            
+                            <div class="workflow-option">
+                                <span class="workflow-icon">🔍</span>
+                                <div class="workflow-info">
+                                    <div class="workflow-name">시장 조사 워크플로우</div>
+                                    <div class="workflow-description">시장 분석 → 경쟁사 조사 → 트렌드 파악 → 보고서 작성</div>
+                                </div>
+                                <span class="workflow-tag tag-new">신규</span>
+                            </div>
+                            
+                            <div class="workflow-option">
+                                <span class="workflow-icon">📋</span>
+                                <div class="workflow-info">
+                                    <div class="workflow-name">콘텐츠 제작 워크플로우</div>
+                                    <div class="workflow-description">기획 → 리서치 → 작성 → 편집 → 최종 검토</div>
+                                </div>
+                                <span class="workflow-tag tag-beta">베타</span>
+                            </div>
+                            
+                            <div style="border-top: 1px solid #e9ecef; margin: 8px 0;"></div>
+                            
+                            <div class="workflow-option">
+                                <span class="workflow-icon">➕</span>
+                                <div class="workflow-info">
+                                    <div class="workflow-name">새 워크플로우 만들기</div>
+                                    <div class="workflow-description">사용자 정의 워크플로우 생성</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-box">
+                        <strong>💡 사용법:</strong> 드롭다운을 클릭하여 원하는 워크플로우를 선택하세요. 각 워크플로우의 상세 설명과 단계를 확인할 수 있습니다.
+                    </div>
+                </div>
+                
+                <div class="demo-box">
+                    <h4 style="margin-bottom: 15px;">워크플로우 정보</h4>
+                    <div style="border: 1px solid #e3f2fd; border-radius: 8px; padding: 16px; background: #f8fffe;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 24px;">⚡</span>
+                            <div>
+                                <h4 style="color: #1976d2; margin-bottom: 4px;">HR 채용 프로세스</h4>
+                                <div style="font-size: 12px; color: #666;">평균 소요시간: 15-30분 | 난이도: 중급</div>
+                            </div>
+                            <span class="workflow-tag tag-popular">인기</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <strong style="font-size: 13px;">프로세스 단계:</strong>
+                            <ol style="margin: 8px 0 0 20px; font-size: 12px; color: #666;">
+                                <li>Job posting 작성 및 게시</li>
+                                <li>지원자 검토 및 선별</li>
+                                <li>면접 일정 조율</li>
+                                <li>면접 진행 및 평가</li>
+                                <li>합격자 선정 및 안내</li>
+                            </ol>
+                        </div>
+                        
+                        <div style="font-size: 12px; color: #666;">
+                            <strong>필요한 도구:</strong> LinkedIn API, 이메일 시스템, 캘린더 연동<br>
+                            <strong>결과물:</strong> 채용 완료 보고서, 지원자 관리 시트
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- / 커맨드 방식 -->
+        <div class="section">
+            <h2 class="section-title">⌨️ 방식 2: / 커맨드 자동완성</h2>
+            
+            <div class="demo-container">
+                <div class="demo-box">
+                    <h4 style="margin-bottom: 15px;">/ 커맨드 입력</h4>
+                    
+                    <div class="input-demo">
+                        <input type="text" class="command-input" placeholder="/ 를 입력하여 워크플로우 검색..." 
+                               value="/hr" oninput="showAutocomplete(this.value)">
+                        
+                        <div class="autocomplete-dropdown" id="autocompleteDropdown">
+                            <div class="autocomplete-item highlighted">
+                                <span class="autocomplete-icon">⚡</span>
+                                <div class="autocomplete-content">
+                                    <div class="autocomplete-title">
+                                        <span class="highlight">HR</span> 채용 프로세스
+                                    </div>
+                                    <div class="autocomplete-subtitle">채용 공고부터 최종 합격까지 전체 프로세스</div>
+                                </div>
+                                <kbd class="keyboard-hint">Enter</kbd>
+                            </div>
+                            
+                            <div class="autocomplete-item">
+                                <span class="autocomplete-icon">📊</span>
+                                <div class="autocomplete-content">
+                                    <div class="autocomplete-title">데이터 분석</div>
+                                    <div class="autocomplete-subtitle">CSV 데이터 분석 및 인사이트 생성</div>
+                                </div>
+                                <kbd class="keyboard-hint">↓ Enter</kbd>
+                            </div>
+                            
+                            <div class="autocomplete-item">
+                                <span class="autocomplete-icon">📧</span>
+                                <div class="autocomplete-content">
+                                    <div class="autocomplete-title">이메일 작성</div>
+                                    <div class="autocomplete-subtitle">비즈니스 이메일 자동 작성</div>
+                                </div>
+                                <kbd class="keyboard-hint">↓ ↓ Enter</kbd>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h5 style="margin-bottom: 8px; font-size: 13px;">다른 예시:</h5>
+                        <div style="font-family: monospace; font-size: 12px; color: #666; line-height: 1.6;">
+                            <div><code>/data</code> → 데이터 분석 워크플로우</div>
+                            <div><code>/email</code> → 이메일 작성 워크플로우</div>
+                            <div><code>/market</code> → 시장 조사 워크플로우</div>
+                            <div><code>/content</code> → 콘텐츠 제작 워크플로우</div>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-box">
+                        <strong>⚡ 빠른 사용법:</strong> 입력창에 <code>/</code>를 입력하고 워크플로우 이름을 타이핑하면 자동완성됩니다. 키보드 화살표로 선택하고 Enter로 확정하세요.
+                    </div>
+                </div>
+                
+                <div class="demo-box">
+                    <h4 style="margin-bottom: 15px;">키보드 단축키</h4>
+                    
+                    <table style="width: 100%; font-size: 13px;">
+                        <tr style="border-bottom: 1px solid #e9ecef;">
+                            <td style="padding: 8px 0; font-weight: 500;">동작</td>
+                            <td style="padding: 8px 0; font-weight: 500;">단축키</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0;">워크플로우 검색 시작</td>
+                            <td style="padding: 6px 0;"><kbd style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px;">/</kbd></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0;">다음 옵션 선택</td>
+                            <td style="padding: 6px 0;"><kbd style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px;">↓</kbd></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0;">이전 옵션 선택</td>
+                            <td style="padding: 6px 0;"><kbd style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px;">↑</kbd></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0;">워크플로우 선택 확정</td>
+                            <td style="padding: 6px 0;"><kbd style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px;">Enter</kbd></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0;">자동완성 닫기</td>
+                            <td style="padding: 6px 0;"><kbd style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px;">Esc</kbd></td>
+                        </tr>
+                    </table>
+                    
+                    <div style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+                        <strong>💡 프로 팁:</strong> 워크플로우 이름의 일부만 입력해도 매칭됩니다. 예: <code>/hr</code>, <code>/hire</code>, <code>/채용</code> 모두 "HR 채용 프로세스"를 찾습니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 비교 및 특징 -->
+        <div class="section">
+            <h2 class="section-title">📊 두 방식 비교</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>특징</th>
+                        <th>드롭다운 방식</th>
+                        <th>/ 커맨드 방식</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>사용 편의성</strong></td>
+                        <td class="pro">✓ 직관적, 초보자 친화적</td>
+                        <td class="pro">✓ 빠른 접근, 파워유저 선호</td>
+                    </tr>
+                    <tr>
+                        <td><strong>검색 속도</strong></td>
+                        <td class="con">⚠️ 스크롤 필요, 상대적으로 느림</td>
+                        <td class="pro">✓ 즉시 검색, 매우 빠름</td>
+                    </tr>
+                    <tr>
+                        <td><strong>정보 표시</strong></td>
+                        <td class="pro">✓ 상세 설명, 태그, 단계 정보</td>
+                        <td class="con">⚠️ 간단한 설명만</td>
+                    </tr>
+                    <tr>
+                        <td><strong>키보드 접근성</strong></td>
+                        <td class="con">⚠️ 마우스 클릭 주로 필요</td>
+                        <td class="pro">✓ 완전한 키보드 조작 가능</td>
+                    </tr>
+                    <tr>
+                        <td><strong>모바일 친화성</strong></td>
+                        <td class="pro">✓ 터치에 최적화</td>
+                        <td class="con">⚠️ 모바일에서 상대적으로 불편</td>
+                    </tr>
+                    <tr>
+                        <td><strong>워크플로우 발견</strong></td>
+                        <td class="pro">✓ 모든 옵션을 쉽게 탐색</td>
+                        <td class="con">⚠️ 기존 지식 필요</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-title">🎯 추천 시나리오</div>
+                    <div class="feature-description">
+                        <strong>드롭다운:</strong> 신규 사용자, 워크플로우 탐색, 상세 정보 확인<br><br>
+                        <strong>/ 커맨드:</strong> 숙련된 사용자, 빠른 실행, 반복 작업
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🔄 하이브리드 접근</div>
+                    <div class="feature-description">
+                        두 방식을 모두 지원하여 사용자가 상황에 따라 선택할 수 있도록 함. 학습 곡선을 고려한 점진적 사용성 향상.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">📱 반응형 대응</div>
+                    <div class="feature-description">
+                        데스크톱에서는 두 방식 모두 제공, 모바일에서는 드롭다운 방식을 기본으로 하되 / 커맨드도 지원.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🎨 일관성 유지</div>
+                    <div class="feature-description">
+                        ChatGPT 스타일의 UI와 조화를 이루면서도 워크플로우 선택의 직관성을 최대화하는 디자인.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 구현 고려사항 -->
+        <div class="section">
+            <h2 class="section-title">⚙️ 구현 고려사항</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-title">검색 알고리즘</div>
+                    <div class="feature-description">
+                        • 퍼지 매칭 (typo tolerance)<br>
+                        • 한글/영어 동시 지원<br>
+                        • 동의어 및 별칭 처리<br>
+                        • 사용 빈도 기반 랭킹
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">성능 최적화</div>
+                    <div class="feature-description">
+                        • 워크플로우 메타데이터 캐싱<br>
+                        • 지연 로딩 (lazy loading)<br>
+                        • 가상 스크롤링<br>
+                        • 디바운스 검색
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">접근성 (A11y)</div>
+                    <div class="feature-description">
+                        • 스크린 리더 지원<br>
+                        • 키보드 네비게이션<br>
+                        • ARIA 라벨링<br>
+                        • 고대비 모드 지원
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">사용자 학습</div>
+                    <div class="feature-description">
+                        • 온보딩 가이드<br>
+                        • 툴팁 및 힌트<br>
+                        • 사용 패턴 분석<br>
+                        • 개인화된 추천
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showDropdown() {
+            const dropdown = document.getElementById('workflowDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function showAutocomplete(value) {
+            const dropdown = document.getElementById('autocompleteDropdown');
+            if (value.startsWith('/')) {
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+        
+        // 드롭다운 외부 클릭 시 닫기
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.demo-box')) {
+                document.getElementById('workflowDropdown').style.display = 'none';
+                document.getElementById('autocompleteDropdown').style.display = 'none';
+            }
+        });
+        
+        // 워크플로우 옵션 클릭 효과
+        document.querySelectorAll('.workflow-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.workflow-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                // 선택된 워크플로우 정보 업데이트 (실제 구현에서는 동적으로 처리)
+                setTimeout(() => {
+                    document.getElementById('workflowDropdown').style.display = 'none';
+                }, 200);
+            });
+        });
+        
+        // 자동완성 아이템 클릭 효과
+        document.querySelectorAll('.autocomplete-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelector('.command-input').value = '/' + this.querySelector('.autocomplete-title').textContent.trim();
+                document.getElementById('autocompleteDropdown').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

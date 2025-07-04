@@ -1,0 +1,37 @@
+---
+description: PostgreSQL + pgvector integration and performance optimization guide
+alwaysApply: false
+globs: **/*.ts, **/*.py
+---
+
+# PostgreSQL + pgvector Usage Rules
+
+1. **Extension Installation & Version Check**
+   - Always install the latest stable `pgvector` extension (e.g. v0.5 or higher).
+   - Verify support for HNSW indexes to maximize performance.
+
+2. **IVFFlat Index Creation**
+   - Use an `ivfflat` index on your embedding column and set `lists` to `CEIL(total_rows / 1000)`.
+   - Example:
+     ```sql
+     CREATE INDEX ON embeddings
+       USING ivfflat (vector_l2_ops)
+       WITH (lists = CEIL((SELECT COUNT(*) FROM embeddings) / 1000));
+     ```
+
+3. **Query Optimization**
+   - Write queries as `ORDER BY embedding <-> $1` to leverage the index.
+   - Always run `EXPLAIN` to confirm an Index Scan is used.
+
+4. **Routine Maintenance**
+   - Schedule regular `VACUUM` and `ANALYZE` jobs (e.g. nightly or after bulk loads).
+   - Prevent table bloat and keep statistics up to date.
+
+5. **Memory & Resource Settings**
+   - Allocate sufficient `maintenance_work_mem` for large index builds.
+   - Monitor `shared_buffers` and OS cache when indexes grow large.
+
+6. **Monitoring & Scaling**
+   - Track vector search latency and memory usage.
+
+   - When data grows by 50% or more, rebuild indexes and recalculate `lists`.

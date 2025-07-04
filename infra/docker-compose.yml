@@ -1,0 +1,111 @@
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: wsap-backend
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - ./.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend/src:/app/src
+    depends_on:
+      - postgres
+      - redis
+      - qdrant
+    networks:
+      - wsap-network
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: wsap-postgres
+    env_file:
+      - ./.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init-postgres.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - wsap-network
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:v1.9.2
+    container_name: wsap-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/6333' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - wsap-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: wsap-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wsap-network
+    restart: unless-stopped
+
+  celery-worker:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: wsap-celery-worker
+    command: celery -A src.worker.celery_app worker --loglevel=info
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    networks:
+      - wsap-network
+    restart: unless-stopped
+
+  celery-beat:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: wsap-celery-beat
+    command: celery -A src.worker.celery_app beat --loglevel=info
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    networks:
+      - wsap-network
+    restart: unless-stopped
+
+networks:
+  wsap-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  qdrant-data:
+  redis-data: 

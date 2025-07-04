@@ -1,0 +1,50 @@
+# Core
+fastapi
+pydantic
+pydantic-settings
+sqlalchemy[asyncio]
+uvicorn[standard]
+
+# LLM & RAG
+langchain
+langchain-community
+langchain-openai
+langchain-google-genai
+langchain-anthropic
+voyageai
+
+# Vector DB
+qdrant-client
+
+# Data & File Processing - Support various document formats
+unstructured[all-docs]
+python-multipart
+python-docx
+pypdf
+llama-cloud-services
+
+# Cache
+redis
+celery[redis]
+
+# Postgres
+psycopg2-binary
+asyncpg
+pgvector
+alembic
+
+# Embedding
+fastembed
+
+# Testing
+pytest
+pytest-asyncio
+pytest-cov
+httpx>=0.27.0
+pytest-mock
+
+# Added from the code block
+pydantic[email]
+passlib[bcrypt]
+python-jose[cryptography]
+greenlet

@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>파일 첨부 및 URL 등록 인터페이스</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .demo-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-box {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        
+        .close-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        /* 파일 업로드 영역 */
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            background: #fafafa;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #2563eb;
+            background: #f8faff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #2563eb;
+            background: #e3f2fd;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #666;
+        }
+        
+        .upload-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .upload-subtext {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+        
+        .upload-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .upload-btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .file-info {
+            font-size: 12px;
+            color: #999;
+            margin-top: 12px;
+        }
+        
+        /* 파일 목록 */
+        .file-list {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .file-list-header {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 500;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        
+        .file-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .file-info-content {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 2px;
+            color: #333;
+        }
+        
+        .file-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .file-status {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .status-complete {
+            background: #28a745;
+        }
+        
+        .status-processing {
+            background: #3b82f6;
+        }
+        
+        .status-error {
+            background: #dc3545;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .action-btn {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .action-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .action-btn.danger {
+            background: #fff5f5;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        
+        .action-btn.danger:hover {
+            background: #fef2f2;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+        
+        /* URL 입력 영역 */
+        .url-input-section {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .url-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .url-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        
+        .add-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .add-btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .url-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+        }
+        
+        /* 채팅창 내 첨부 파일 표시 */
+        .chat-attachments {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .attachments-title {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .attachment-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            border: 1px solid #e9ecef;
+            padding: 6px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .attachment-remove {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0;
+            margin-left: 4px;
+        }
+        
+        .attachment-remove:hover {
+            color: #dc3545;
+        }
+        
+        /* 입력 컨트롤 영역 */
+        .input-controls-demo {
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+        }
+        
+        .input-field-demo {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .input-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            background: #f5f5f5;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #333;
+            transition: background 0.2s;
+        }
+        
+        .input-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 18px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-left: 6px;
+        }
+        
+        /* 알림 및 팁 */
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 16px 0;
+            font-size: 13px;
+            color: #1565c0;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 16px 0;
+            font-size: 13px;
+            color: #856404;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 16px 0;
+            font-size: 13px;
+            color: #155724;
+        }
+        
+        /* 기능 카드 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .feature-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .feature-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .demo-container {
+                flex-direction: column;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .add-btn {
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 30px; color: #333;">파일 첨부 및 URL 등록 인터페이스</h1>
+        
+        <!-- 파일 첨부 모달 -->
+        <div class="section">
+            <h2 class="section-title">📎 파일 첨부 모달</h2>
+            
+            <div class="demo-container">
+                <div class="demo-box">
+                    <div class="modal" style="position: static; max-width: none; width: 100%; max-height: none;">
+                        <div class="modal-header">
+                            <h3 class="modal-title">파일 첨부</h3>
+                            <button class="close-btn">✕</button>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <!-- 드래그앤드롭 영역 -->
+                            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                                <div class="upload-icon">📁</div>
+                                <div class="upload-text">파일을 드래그하여 업로드</div>
+                                <div class="upload-subtext">또는 클릭하여 파일 선택</div>
+                                <button class="upload-btn">파일 선택</button>
+                                <div class="file-info">
+                                    지원 형식: PDF, DOCX, TXT, MD, CSV, XLSX (최대 10MB)
+                                </div>
+                            </div>
+                            <input type="file" id="fileInput" style="display: none;" multiple>
+                            
+                            <!-- 업로드된 파일 목록 -->
+                            <div class="file-list">
+                                <div class="file-list-header">
+                                    업로드된 파일 (3개)
+                                </div>
+                                
+                                <div class="file-item">
+                                    <span class="file-icon">📄</span>
+                                    <div class="file-info-content">
+                                        <div class="file-name">company_handbook.pdf</div>
+                                        <div class="file-meta">2.4MB • 업로드 완료 • 처리됨</div>
+                                    </div>
+                                    <span class="file-status status-complete">✓</span>
+                                    <div class="file-actions">
+                                        <button class="action-btn">미리보기</button>
+                                        <button class="action-btn danger">✕</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="file-item">
+                                    <span class="file-icon">📊</span>
+                                    <div class="file-info-content">
+                                        <div class="file-name">sales_data.xlsx</div>
+                                        <div class="file-meta">1.8MB • 처리 중...</div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 75%;"></div>
+                                        </div>
+                                    </div>
+                                    <span class="file-status status-processing">75%</span>
+                                    <div class="file-actions">
+                                        <button class="action-btn">⏸</button>
+                                        <button class="action-btn danger">✕</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="file-item">
+                                    <span class="file-icon">📝</span>
+                                    <div class="file-info-content">
+                                        <div class="file-name">corrupted_file.docx</div>
+                                        <div class="file-meta">0.5MB • 파일 형식을 인식할 수 없습니다</div>
+                                    </div>
+                                    <span class="file-status status-error">❌</span>
+                                    <div class="file-actions">
+                                        <button class="action-btn">재시도</button>
+                                        <button class="action-btn danger">✕</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="success-box">
+                                <strong>✅ 성공:</strong> company_handbook.pdf가 성공적으로 처리되었습니다. 이제 AI가 이 문서의 내용을 참조할 수 있습니다.
+                            </div>
+                            
+                            <div class="warning-box">
+                                <strong>⚠️ 주의:</strong> 처리 중인 파일이 있습니다. 모든 파일 처리가 완료될 때까지 기다려주세요.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- URL 등록 모달 -->
+        <div class="section">
+            <h2 class="section-title">🔗 URL 등록 모달</h2>
+            
+            <div class="demo-container">
+                <div class="demo-box">
+                    <div class="modal" style="position: static; max-width: none; width: 100%; max-height: none;">
+                        <div class="modal-header">
+                            <h3 class="modal-title">웹사이트 URL 등록</h3>
+                            <button class="close-btn">✕</button>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <div class="url-input-section">
+                                <label class="form-label">웹사이트 URL</label>
+                                <div class="input-group">
+                                    <input type="text" class="url-input" 
+                                           placeholder="https://example.com 형태로 입력하세요" 
+                                           value="https://linkedin.com/jobs/view/123456">
+                                    <button class="add-btn">추가</button>
+                                </div>
+                                <div class="url-info">
+                                    💡 공개 웹페이지만 참조 가능합니다. 로그인이 필요한 페이지는 지원되지 않습니다.
+                                </div>
+                            </div>
+                            
+                            <!-- 등록된 URL 목록 -->
+                            <div class="file-list">
+                                <div class="file-list-header">
+                                    등록된 URL (2개)
+                                </div>
+                                
+                                <div class="file-item">
+                                    <span class="file-icon">🔗</span>
+                                    <div class="file-info-content">
+                                        <div class="file-name">LinkedIn Job Posting</div>
+                                        <div class="file-meta">linkedin.com/jobs/view/123456</div>
+                                        <div class="file-meta" style="color: #28a745; margin-top: 2px;">✓ 내용 수집 완료 (2.1KB)</div>
+                                    </div>
+                                    <span class="file-status status-complete">✓</span>
+                                    <div class="file-actions">
+                                        <button class="action-btn">미리보기</button>
+                                        <button class="action-btn danger">✕</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="file-item">
+                                    <span class="file-icon">🔗</span>
+                                    <div class="file-info-content">
+                                        <div class="file-name">Company Career Page</div>
+                                        <div class="file-meta">company.com/careers</div>
+                                        <div class="file-meta" style="color: #3b82f6;">🔄 페이지 내용 수집 중...</div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 60%;"></div>
+                                        </div>
+                                    </div>
+                                    <span class="file-status status-processing">수집중</span>
+                                    <div class="file-actions">
+                                        <button class="action-btn">중단</button>
+                                        <button class="action-btn danger">✕</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-box">
+                                <strong>💡 팁:</strong> 
+                                • 뉴스 기사, 블로그 포스트, 공식 문서 등을 참조할 수 있습니다<br>
+                                • 페이지 내용이 변경되면 자동으로 업데이트됩니다<br>
+                                • 최대 5개의 URL을 동시에 등록할 수 있습니다
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 채팅창 내 첨부 파일 표시 -->
+        <div class="section">
+            <h2 class="section-title">💬 채팅창 내 첨부 파일 표시</h2>
+            
+            <div class="demo-container">
+                <div class="demo-box">
+                    <h4 style="margin-bottom: 15px;">첨부된 파일들 (가로형 리스트)</h4>
+                    <div class="chat-attachments">
+                        <div class="attachments-title">📎 첨부된 참조 자료</div>
+                        <div class="attachment-list">
+                            <div class="attachment-item">
+                                📄 job_requirements.pdf
+                                <button class="attachment-remove">✕</button>
+                            </div>
+                            <div class="attachment-item">
+                                🔗 linkedin.com/jobs
+                                <button class="attachment-remove">✕</button>
+                            </div>
+                            <div class="attachment-item">
+                                📊 sales_data.xlsx
+                                <button class="attachment-remove">✕</button>
+                            </div>
+                            <div class="attachment-item">
+                                🔗 company.com/careers
+                                <button class="attachment-remove">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="demo-box">
+                    <h4 style="margin-bottom: 15px;">입력창 컨트롤</h4>
+                    <div class="input-controls-demo">
+                        <input type="text" class="input-field-demo" placeholder="메시지를 입력하세요...">
+                        <button class="input-btn" title="파일 첨부">📎</button>
+                        <button class="input-btn" title="URL 추가">🔗</button>
+                        <button class="send-btn">→</button>
+                    </div>
+                    
+                    <div class="info-box" style="margin-top: 16px;">
+                        <strong>📎 파일 첨부:</strong> PDF, DOCX, TXT 등 문서 파일<br>
+                        <strong>🔗 URL 추가:</strong> 웹페이지 링크 및 온라인 문서
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 기능 상세 설명 -->
+        <div class="section">
+            <h2 class="section-title">⚙️ 기능 상세 및 구현 고려사항</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-title">📁 파일 처리 파이프라인</div>
+                    <div class="feature-description">
+                        • 업로드 → 바이러스 검사 → 파싱<br>
+                        • 청킹 및 임베딩 생성<br>
+                        • 벡터 DB 저장 → 인덱싱<br>
+                        • 실시간 진행률 표시
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🔗 웹 크롤링 & 파싱</div>
+                    <div class="feature-description">
+                        • robots.txt 준수<br>
+                        • 동적 콘텐츠 렌더링<br>
+                        • 주기적 업데이트 체크<br>
+                        • 접근 권한 검증
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🛡️ 보안 및 검증</div>
+                    <div class="feature-description">
+                        • 파일 형식 화이트리스트<br>
+                        • 악성 코드 스캔<br>
+                        • URL 안전성 검사<br>
+                        • 개인정보 포함 여부 체크
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">💾 저장소 관리</div>
+                    <div class="feature-description">
+                        • 사용량 모니터링<br>
+                        • 자동 정리 정책<br>
+                        • 압축 및 최적화<br>
+                        • 백업 및 복구
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🎨 사용자 경험</div>
+                    <div class="feature-description">
+                        • 드래그앤드롭 지원<br>
+                        • 실시간 피드백<br>
+                        • 진행률 표시<br>
+                        • 에러 처리 및 재시도
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">📱 반응형 지원</div>
+                    <div class="feature-description">
+                        • 모바일 파일 선택<br>
+                        • 터치 친화적 UI<br>
+                        • 네트워크 상태 고려<br>
+                        • 오프라인 지원
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                <h4 style="margin-bottom: 12px; color: #333;">📋 지원되는 파일 형식</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; font-size: 13px;">
+                    <div>
+                        <strong>📄 문서:</strong><br>
+                        PDF, DOCX, DOC, TXT, MD, RTF
+                    </div>
+                    <div>
+                        <strong>📊 데이터:</strong><br>
+                        CSV, XLSX, XLS, JSON, XML
+                    </div>
+                    <div>
+                        <strong>💻 코드:</strong><br>
+                        PY, JS, HTML, CSS, SQL
+                    </div>
+                    <div>
+                        <strong>🔗 웹 콘텐츠:</strong><br>
+                        뉴스, 블로그, 위키, API 문서
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 파일 선택 시뮬레이션
+        document.getElementById('fileInput')?.addEventListener('change', function(e) {
+            const files = e.target.files;
+            console.log('Selected files:', files);
+            // 실제 구현에서는 파일 업로드 처리
+        });
+        
+        // 드래그앤드롭 시뮬레이션
+        document.querySelectorAll('.upload-area').forEach(area => {
+            area.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            area.addEventListener('dragleave', function(e) {
+                this.classList.remove('dragover');
+            });
+            
+            area.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                console.log('Files dropped:', e.dataTransfer.files);
+                // 실제 구현에서는 파일 처리
+            });
+        });
+        
+        // 첨부 파일 제거
+        document.querySelectorAll('.attachment-remove').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.closest('.attachment-item').remove();
+            });
+        });
+        
+        // URL 추가 시뮬레이션
+        document.querySelectorAll('.add-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('.url-input');
+                if (input.value.trim()) {
+                    console.log('Adding URL:', input.value);
+                    // 실제 구현에서는 URL 처리
+                    input.value = '';
+                }
+            });
+        });
+        
+        // 입력창 컨트롤 버튼
+        document.querySelectorAll('.input-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const title = this.getAttribute('title');
+                if (title === '파일 첨부') {
+                    console.log('Opening file attachment modal');
+                } else if (title === 'URL 추가') {
+                    console.log('Opening URL registration modal');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
