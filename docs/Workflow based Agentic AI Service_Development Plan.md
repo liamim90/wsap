@@ -230,10 +230,10 @@ describe('Typography', () => {
 ### **2.3. 레이아웃 및 네비게이션 시스템 구축**
 
 #### **완료 기준 (Definition of Done)**
-- [ ] 반응형 레이아웃이 정상 작동
-- [ ] 인증 상태에 따른 네비게이션이 올바르게 렌더링
-- [ ] 모바일 메뉴가 정상 동작
-- [ ] 라우팅 보호 기능 작동
+- [O] 반응형 레이아웃이 정상 작동
+- [O] 인증 상태에 따른 네비게이션이 올바르게 렌더링
+- [O] 모바일 메뉴가 정상 동작
+- [O] 라우팅 보호 기능 작동
 
 #### **핵심 테스트 시나리오**
 ```
@@ -255,8 +255,8 @@ describe('Typography', () => {
 ```
 
 #### **개발 태스크**
-*   [ ] **Task 2.3.1 (TDD):** React Router DOM 설정 및 라우팅 구조 정의
-*   [ ] **Task 2.3.2 (TDD):** Header 컴포넌트 구현
+*   [O] **Task 2.3.1 (TDD):** React Router DOM 설정 및 라우팅 구조 정의
+*   [O] **Task 2.3.2 (TDD):** Header 컴포넌트 구현
 ```typescript
 // tests/components/layout/Header.test.tsx
 describe('Header', () => {
@@ -278,8 +278,8 @@ describe('Header', () => {
 ### **2.4. 상태 관리 및 API 통신 설정**
 
 #### **완료 기준 (Definition of Done)**
-- [ ] 인증 상태가 전역적으로 관리
-- [ ] API 통신 시 적절한 에러 처리와 로딩 상태 제공
+- [O] 인증 상태가 전역적으로 관리
+- [O] API 통신 시 적절한 에러 처리와 로딩 상태 제공
 - [ ] 토큰 자동 갱신 기능 동작
 - [ ] 커스텀 훅으로 재사용성 확보
 
@@ -299,9 +299,9 @@ describe('Header', () => {
 ```
 
 #### **개발 태스크**
-*   [ ] **Task 2.4.1 (TDD):** Zustand 상태 관리 설정
-*   [ ] **Task 2.4.2 (TDD):** Axios 인스턴스 설정 (인터셉터, 에러 처리)
-*   [ ] **Task 2.4.3 (TDD):** API 서비스 함수들 구현 (`services/api/`)
+*   [O] **Task 2.4.1 (TDD):** Zustand 상태 관리 설정
+*   [O] **Task 2.4.2 (TDD):** Axios 인스턴스 설정 (인터셉터, 에러 처리)
+*   [O] **Task 2.4.3 (TDD):** API 서비스 함수들 구현 (`services/api/`)
 *   [ ] **Task 2.4.4 (TDD):** 커스텀 훅 구현 (`useAuth`, `useApi`, `useLocalStorage`)
 ```typescript
 // tests/hooks/useAuth.test.tsx
@@ -337,109 +337,117 @@ describe('useAuth', () => {
 
 ---
 
-## **Phase 3: 워크플로우 실행 엔진 및 RAG 파이프라인 구축 (Week 3-4)**
+## **Phase 3: 하이브리드 실행 엔진 및 RAG 파이프라인 구축 (Week 3-4)**
 
-*   **목표:** 서비스의 핵심 가치인 '절차 기반 실행' 엔진을 완성하고, 지식 기반(RAG)을 제공하기 위한 데이터 처리 파이프라인을 구축한다.
+*   **목표:** 서비스의 핵심 가치인 '하이브리드 실행 엔진'을 완성하고, 파일 업로드부터 RAG 검색까지 이어지는 완전한 데이터 처리 파이프라인을 구축한다. 이를 통해 성능과 확장성을 모두 갖춘 코어 백엔드 시스템을 마련한다.
 
-### **3.1. Agent Core 및 워크플로우 실행 엔진**
+### **3.1. Agent Core 및 하이브리드 실행 엔진 구축**
 
 #### **완료 기준 (Definition of Done)**
-- [ ] LangGraph로 정의된 워크플로우를 API를 통해 실행 가능
-- [ ] 워크플로우 결과를 JSON 형태로 반환
-- [ ] 다양한 워크플로우 템플릿 지원
-- [ ] 실행 상태 추적 가능
+- [ ] `AgentState` Pydantic 모델이 `Core Architecture` 문서에 따라 정의됨.
+- [ ] `tool_caller` 노드를 실행하는 `HybridNodeExecutor`가 `tool_name`에 따라 내부 서비스 호출과 외부 MCP 호출을 올바르게 라우팅함.
+- [ ] `POST /api/v1/workflows/{id}/execute` API가 `API Design` 문서에 따라 202 Accepted와 `execution_id`를 반환함.
+- [ ] `GET /api/v1/executions/{id}/stream` SSE 엔드포인트가 `workflow.started`, `step.started` 등 실시간 상태 이벤트를 스트리밍함.
 
 #### **핵심 테스트 시나리오**
 ```
-✅ T3.1.1: 워크플로우 상태 객체 검증
+✅ T3.1.1: AgentState 상태 객체 검증
    - 입력: 워크플로우 초기 상태
-   - 검증: AgentState 객체 올바른 구조 및 타입
+   - 검증: Core Architecture 문서에 정의된 필수 필드 포함 및 타입 일치
 
-✅ T3.1.2: 워크플로우 실행 성공
-   - Mock: LLM API 정상 응답
-   - 검증: 워크플로우 완료 및 결과 반환
+✅ T3.1.2: 하이브리드 실행 엔진 라우팅 테스트 (내부)
+   - 입력: tool_name: "rag_knowledge_search"를 사용하는 워크플로우
+   - 검증: MCP 프로토콜을 거치지 않고 내부 RAGService가 직접 호출됨
 
-✅ T3.1.3: 워크플로우 템플릿 로딩
-   - 입력: JSON 워크플로우 템플릿 파일
-   - 검증: 템플릿 파싱 및 LangGraph 구성
+✅ T3.1.3: 하이브리드 실행 엔진 라우팅 테스트 (외부)
+   - 입력: tool_name: "send_email" (가상)을 사용하는 워크플로우
+   - Mock: MCP 서버
+   - 검증: MCPClientManager를 통해 외부 도구 호출 프로토콜이 실행됨
 
-✅ T3.1.4: 워크플로우 실행 API
-   - 입력: POST /workflows/{workflow_id}/execute
-   - 검증: 202 응답 + 실행 ID 반환
+✅ T3.1.4: 비동기 실행 API 테스트
+   - 입력: POST /api/v1/workflows/{workflow_id}/execute
+   - 검증: 202 응답 + 유효한 execution_id 및 sse_endpoint 반환
+
+✅ T3.1.5: SSE 스트리밍 테스트
+   - 입력: GET /api/v1/executions/{execution_id}/stream 연결
+   - 검증: 워크플로우 실행 시, 정의된 이벤트(workflow.started 등)들이 순서대로 수신됨
 ```
 
 #### **개발 태스크**
-*   [ ] **Task 3.1.1 (TDD):** 워크플로우 상태 객체 `AgentState` Pydantic 모델 정의
-*   [ ] **Task 3.1.2 (TDD):** LangGraph `StatefulGraph`를 구성하고 실행하는 `WorkflowService` 구현
-*   [ ] **Task 3.1.3 (TDD):** JSON 파일로 정의된 워크플로우 템플릿 로드 로직 구현
-*   [ ] **Task 3.1.4 (TDD):** 워크플로우 실행 API (`/workflows/{workflow_id}/execute`) 구현
+*   [ ] **Task 3.1.1 (TDD):** `Core Architecture` 문서 기반 `AgentState` Pydantic 모델 정의
+*   [ ] **Task 3.1.2 (TDD):** 내부/외부 도구 정보를 관리하는 `ToolRegistry` 구현
+*   [ ] **Task 3.1.3 (TDD):** `HybridNodeExecutor` 구현 (`tool_caller` 노드를 받아 `ToolRegistry` 기반으로 내부/외부 호출 분기)
+*   [ ] **Task 3.1.4 (TDD):** LangGraph `StatefulGraph`와 `HybridNodeExecutor`를 통합한 `WorkflowService` 구현
+*   [ ] **Task 3.1.5 (TDD):** `API Design` 문서 기반 비동기 워크플로우 실행 API (`/execute`) 구현
+*   [ ] **Task 3.1.6 (TDD):** SSE 스트리밍을 위한 `SSEConnectionManager` 및 이벤트 전송 로직 구현
 
-### **3.2. RAG 데이터 처리 파이프라인**
+### **3.2. RAG 데이터 처리 파이프라인 구축**
 
 #### **완료 기준 (Definition of Done)**
-- [ ] 파일 업로드 시 백그라운드에서 비동기 처리
-- [ ] Qdrant와 PostgreSQL에 데이터 저장
-- [ ] 다양한 파일 형식 지원 (PDF, TXT, DOCX 등)
-- [ ] 처리 상태 추적 가능
+- [ ] 파일 업로드 시 `File`, `Chunk` 모델이 `user_id`와 함께 PostgreSQL에 저장됨.
+- [ ] 벡터 데이터가 `user_id`, `file_id`를 포함한 payload와 함께 Qdrant에 저장됨 (데이터 격리 확인).
+- [ ] 파일 업로드 API가 202 응답과 `file_id`를 반환하고, Celery 태스크 체인이 비동기적으로 실행됨.
+- [ ] `File` 모델의 상태(`PROCESSING`, `COMPLETED`, `FAILED`)가 파이프라인 진행에 따라 올바르게 업데이트됨.
+- [ ] 임베딩 시, `SecretsService`를 통해 사용자의 동적 API 키를 가져와 사용함.
 
 #### **핵심 테스트 시나리오**
 ```
-✅ T3.2.1: 파일 파싱 성공
-   - 입력: PDF, TXT, DOCX 파일
-   - 검증: 텍스트 추출 및 메타데이터 저장
+✅ T3.2.1: 데이터 격리 테스트 (PostgreSQL & Qdrant)
+   - 시나리오: 사용자 A와 사용자 B가 각각 파일을 업로드
+   - 검증: 사용자 A는 자신의 파일/청크/벡터만 조회 가능하고, 사용자 B의 데이터는 조회할 수 없음
 
-✅ T3.2.2: 텍스트 청킹 정확성
-   - 입력: 긴 텍스트 문서
-   - 검증: 적절한 크기로 분할 및 오버랩 유지
+✅ T3.2.2: 비동기 파이프라인 상태 전이 테스트
+   - 입력: PDF 파일 업로드
+   - 검증: File.status가 PENDING -> PROCESSING -> COMPLETED 순으로 변경됨
 
-✅ T3.2.3: 파일 업로드 API
-   - 입력: POST /rag/upload (multipart/form-data)
-   - 검증: 202 응답 + 처리 작업 ID 반환
+✅ T3.2.3: 파이프라인 실패 처리 테스트
+   - Mock: 임베딩 단계에서 에러 발생
+   - 검증: File.status가 FAILED로 변경되고, error_message가 기록됨
 
-✅ T3.2.4: 비동기 처리 파이프라인
-   - Mock: Celery 태스크 실행
-   - 검증: 파싱 → 청킹 → 임베딩 → 저장 순차 실행
+✅ T3.2.4: 동적 API 키 사용 테스트
+   - Mock: SecretsService가 특정 유저의 가짜 API 키를 반환하도록 설정
+   - 검증: 임베딩 서비스가 해당 가짜 키를 사용하여 초기화되고 호출됨
 ```
 
 #### **개발 태스크**
-*   [ ] **Task 3.2.1 (TDD):** `File` 및 `Chunk` DB 모델 정의 및 마이그레이션
-*   [ ] **Task 3.2.2 (TDD):** 파일 유형별 텍스트 파서 서비스 (`services/parser.py`)
-*   [ ] **Task 3.2.3 (TDD):** `RecursiveCharacterTextSplitter`를 사용한 청킹 서비스
-*   [ ] **Task 3.2.4 (TDD):** 파일 업로드 API (`/rag/upload`) 구현
-*   [ ] **Task 3.2.5 (TDD):** Celery 비동기 처리 태스크 구현
+*   [ ] **Task 3.2.1 (TDD):** `RAG pipeline` 문서 기반 `File`, `Chunk` DB 모델 정의 (user_id 포함) 및 Alembic 마이그레이션
+*   [ ] **Task 3.2.2 (TDD):** `SecretsService` 추상화 및 구현 (초기에는 Mock 또는 .env 기반)
+*   [ ] **Task 3.2.3 (TDD):** `EmbeddingService` 구현 (user_id를 받아 동적으로 클라이언트 초기화)
+*   [ ] **Task 3.2.4 (TDD):** 파일 업로드 API (`/rag/upload`) 구현 (202 응답 및 Celery 태스크 호출)
+*   [ ] **Task 3.2.5 (TDD):** Celery 태스크 체인 구현 (파싱 → 청킹 → 임베딩 → 저장) 및 상태 업데이트 로직
 
 ### **3.3. RAG 검색 기능 및 워크플로우 통합**
 
 #### **완료 기준 (Definition of Done)**
-- [ ] '문서 기반 Q&A' 워크플로우가 RAG 검색 도구를 성공적으로 호출
-- [ ] 검색된 컨텍스트를 기반으로 LLM이 답변 생성
-- [ ] 하이브리드 검색 (키워드 + 벡터) 지원
-- [ ] Re-ranking을 통한 검색 품질 향상
+- [ ] `RetrievalService`가 하이브리드 검색(Keyword+Vector)과 Re-ranker를 통합하여 구현됨.
+- [ ] `RetrievalService`가 `RAGSearchTool`으로 래핑되어 `ToolRegistry`에 '내부' 도구로 등록됨.
+- [ ] '문서 기반 Q&A' 워크플로우가 `tool_caller` 노드를 통해 `RAGSearchTool`을 성공적으로 호출함.
 
 #### **핵심 테스트 시나리오**
 ```
-✅ T3.3.1: RAG 하이브리드 검색
-   - 입력: 사용자 질문
-   - 검증: Qdrant에서 관련 문서 청크 반환
+✅ T3.3.1: RAG 하이브리드 검색 테스트
+   - 입력: 특정 키워드와 의미를 모두 포함하는 사용자 질문
+   - 검증: Qdrant와 PostgreSQL에서 각각 관련 문서를 찾고, Re-ranker가 최종 순서를 결정하여 반환함
 
-✅ T3.3.2: Re-ranking 동작
-   - 입력: 검색된 문서 청크들
-   - 검증: 관련도 순으로 재정렬
+✅ T3.3.2: RAG 도구 워크플로우 통합 테스트
+   - 입력: '문서 기반 Q&A' 워크플로우 실행
+   - 검증: 워크플로우 내에서 RAGSearchTool이 호출되고, 그 결과(context)가 다음 LLM 노드로 정상 전달됨
 
-✅ T3.3.3: RAG 도구 워크플로우 통합
-   - 입력: 문서 기반 질문
-   - 검증: 검색 → 컨텍스트 구성 → LLM 답변 생성
+✅ T3.3.3: RAG 검색 권한 테스트
+   - 시나리오: 사용자 A가 사용자 B의 문서 내용을 질문
+   - 검증: 검색 결과가 반환되지 않거나, 권한 없음을 나타내는 빈 컨텍스트가 반환됨
 ```
 
 #### **개발 태스크**
-*   [ ] **Task 3.3.1 (TDD):** Qdrant 하이브리드 검색 및 Re-ranker 통합한 `RetrievalService` 구현
-*   [ ] **Task 3.3.2 (TDD):** `RetrievalService`를 LangChain `Tool`로 래핑
-*   [ ] **Task 3.3.3 (TDD):** `RAGSearchTool`을 사용하는 워크플로우 노드 및 그래프 구성
+*   [ ] **Task 3.3.1 (TDD):** 키워드 추출, 벡터 검색, 키워드 검색, Re-ranker를 포함하는 `RetrievalService` 구현
+*   [ ] **Task 3.3.2 (TDD):** `RetrievalService`를 LangChain `Tool`(`RAGSearchTool`)으로 래핑
+*   [ ] **Task 3.3.3 (TDD):** `ToolRegistry`에 `RAGSearchTool`과 `LLMGenerationTool`을 '내부' 도구로 등록
+*   [ ] **Task 3.3.4 (TDD):** `RAG pipeline` 문서에 정의된 '문서 기반 Q&A' JSON 워크플로우 템플릿 작성 및 테스트
 
-#### **Mock/Stub 전략**
-- **LLM API**: openai.OpenAI Mock으로 고정 응답 반환
-- **Qdrant**: 메모리 내 벡터 스토어 또는 Mock 객체
-- **Celery**: apply_async() Mock으로 태스크 시뮬레이션
+#### **Mock/Stub 전략 (Phase 3)**
+- **MCP Server**: 아직 MCP 서버 구현 전이므로, `MCPClientManager`는 외부 도구 호출 시 항상 Mock 응답을 반환하도록 설정.
+- **Secrets Manager**: 로컬 개발을 위해 `.env` 파일이나 간단한 Dict를 사용하는 `MockSecretsService` 구현.
+- **Re-ranker 모델**: 초기에는 실제 모델 없이 간단한 점수 합산 로직으로 구현하고, 추후 실제 모델로 교체.
 
 ---
 
@@ -450,9 +458,9 @@ describe('useAuth', () => {
 ### **4.1. 인증 페이지 및 보호된 라우팅 구현**
 
 #### **완료 기준 (Definition of Done)**
-- [ ] 사용자가 UI를 통해 회원가입/로그인 가능
-- [ ] 로그인된 상태가 새로고침 후에도 유지
-- [ ] 보호된 페이지에 적절한 접근 제어
+- [O] 사용자가 UI를 통해 회원가입/로그인 가능
+- [O] 로그인된 상태가 새로고침 후에도 유지
+- [O] 보호된 페이지에 적절한 접근 제어
 - [ ] 폼 유효성 검사 및 사용자 친화적 에러 처리
 
 #### **핵심 테스트 시나리오**
@@ -479,7 +487,7 @@ describe('useAuth', () => {
 ```
 
 #### **개발 태스크**
-*   [ ] **Task 4.1.1 (TDD):** 로그인 페이지 컴포넌트 구현
+*   [O] **Task 4.1.1 (TDD):** 로그인 페이지 컴포넌트 구현
 ```typescript
 // tests/pages/Login.test.tsx
 describe('Login Page', () => {
@@ -505,9 +513,9 @@ describe('Login Page', () => {
   });
 });
 ```
-*   [ ] **Task 4.1.2 (TDD):** 회원가입 페이지 컴포넌트 구현
+*   [O] **Task 4.1.2 (TDD):** 회원가입 페이지 컴포넌트 구현
 *   [ ] **Task 4.1.3 (TDD):** 폼 유효성 검사 및 에러 처리 구현 (react-hook-form + zod)
-*   [ ] **Task 4.1.4 (TDD):** ProtectedRoute 컴포넌트 구현
+*   [O] **Task 4.1.4 (TDD):** ProtectedRoute 컴포넌트 구현
 *   [ ] **Task 4.1.5 (TDD):** 사용자 프로필 페이지 및 API 키 관리 UI 구현
 
 ### **4.2. 파일 업로드 시스템 구현**
@@ -516,7 +524,7 @@ describe('Login Page', () => {
 - [ ] 드래그앤드롭 또는 클릭으로 파일 업로드 가능
 - [ ] 업로드 진행상황과 결과를 실시간으로 확인 가능
 - [ ] 지원하는 파일 타입 검증
-- [ ] 파일 처리 상태 실시간 업데이트
+- [ ] SSE 스트림을 통해 파일 처리 상태(`PROCESSING`, `COMPLETED`, `FAILED`)를 실시간으로 추적하고 표시
 
 #### **핵심 테스트 시나리오**
 ```
@@ -533,8 +541,8 @@ describe('Login Page', () => {
    - 검증: 프로그레스 바 업데이트 + 퍼센트 표시
 
 ✅ T4.2.4: 파일 처리 상태 추적
-   - Mock: SSE 또는 WebSocket 상태 업데이트
-   - 검증: "파싱 중" → "임베딩 중" → "완료" 상태 표시
+   - Mock: 백엔드에서 파일 처리 상태(processing, completed, failed) SSE 이벤트 전송
+   - 검증: UI가 SSE 이벤트를 받아 파일 목록의 상태를 "처리 중" → "완료" 또는 "실패"로 올바르게 업데이트함
 ```
 
 #### **개발 태스크**
@@ -566,11 +574,11 @@ describe('FileUpload', () => {
 ```
 *   [ ] **Task 4.2.2 (TDD):** 파일 업로드 진행상황 및 상태 표시 컴포넌트 구현
 *   [ ] **Task 4.2.3 (TDD):** 업로드된 파일 목록 및 관리 UI 구현
-*   [ ] **Task 4.2.4 (TDD):** 파일 처리 상태 실시간 업데이트 (WebSocket 또는 SSE)
+*   [ ] **Task 4.2.4 (TDD):** 파일 업로드 API 호출 후 반환된 `sse_endpoint`에 연결하여 실시간 상태 업데이트를 처리하는 로직 구현
 
 #### **Mock/Stub 전략**
 - **File Upload API**: XMLHttpRequest Mock으로 업로드 진행률 시뮬레이션
-- **WebSocket**: Mock WebSocket 객체로 상태 업데이트 시뮬레이션
+- **SSE Connection**: Mock EventSource로 실시간 파일 처리 상태 이벤트 시뮬레이션
 - **File API**: File, FileReader Mock 객체 활용
 
 ---
@@ -638,7 +646,7 @@ describe('Message', () => {
 
 #### **완료 기준 (Definition of Done)**
 - [ ] `/` 명령어로 워크플로우를 실행 가능
-- [ ] AI의 작업 과정을 실시간으로 시각적으로 확인 가능
+- [ ] SSE 스트림으로 수신되는 `step.started`, `step.completed` 등의 이벤트를 기반으로 워크플로우 진행 상태를 실시간 시각화
 - [ ] 워크플로우 단계별 진행 상황 표시
 - [ ] 결과에 대한 피드백 제공 기능
 
@@ -653,8 +661,8 @@ describe('Message', () => {
    - 검증: 실행 시작 + 진행 상태 표시
 
 ✅ T5.2.3: 실시간 상태 업데이트
-   - Mock: SSE 워크플로우 상태 이벤트
-   - 검증: "분석 중" → "검색 중" → "생성 중" 단계 표시
+   - Mock: 백엔드에서 API Design 문서에 정의된 SSE 이벤트 스트림 전송
+   - 검증: `workflow.started`, `step.started`, `node.output`, `workflow.completed` 이벤트가 순서대로 수신되고 UI에 반영되는지 검증
 
 ✅ T5.2.4: 워크플로우 결과 표시
    - 입력: 워크플로우 완료 이벤트
@@ -685,7 +693,7 @@ describe('WorkflowSelector', () => {
 });
 ```
 *   [ ] **Task 5.2.2 (TDD):** 워크플로우 실행 상태 시각화 컴포넌트 구현
-*   [ ] **Task 5.2.3 (TDD):** SSE를 통한 실시간 상태 업데이트 구현
+*   [ ] **Task 5.2.3 (TDD):** 워크플로우 실행 API 호출 후 반환된 `sse_endpoint`에 연결하고, 수신되는 이벤트를 파싱하여 UI 상태를 업데이트하는 로직 구현
 *   [ ] **Task 5.2.4 (TDD):** 워크플로우 결과 표시 및 피드백 UI 구현
 
 ### **5.3. 고급 채팅 기능 구현**
@@ -693,7 +701,7 @@ describe('WorkflowSelector', () => {
 #### **완료 기준 (Definition of Done)**
 - [ ] 채팅 세션 관리 (새 채팅, 히스토리, 세션 저장/로드)
 - [ ] 메시지 재전송 및 편집 기능
-- [ ] 연결 끊김 및 에러 상황 처리
+- [ ] 연결 끊김 및 에러 상황 처리 (SSE 연결 끊김 시 Last-Event-ID를 사용한 자동 재연결 기능 포함)
 - [ ] 마크다운 렌더링 및 코드 하이라이팅
 
 #### **핵심 테스트 시나리오**
@@ -707,8 +715,8 @@ describe('WorkflowSelector', () => {
    - 검증: 동일 메시지 재전송 + 상태 업데이트
 
 ✅ T5.3.3: 연결 상태 처리
-   - Mock: 네트워크 연결 끊김
-   - 검증: 연결 상태 표시 + 재연결 시도
+   - Mock: SSE 연결 강제 종료
+   - 검증: UI에 연결 상태 이상 표시 + 잠시 후 Last-Event-ID 헤더와 함께 자동으로 재연결 시도
 
 ✅ T5.3.4: 마크다운 렌더링
    - 입력: 마크다운 형식의 AI 응답
@@ -742,9 +750,9 @@ describe('WorkflowSelector', () => {
 
 #### **핵심 테스트 시나리오**
 ```
-✅ T6.1.1: 완전한 사용자 여정 테스트
-   - 회원가입 → 로그인 → 파일 업로드 → 워크플로우 실행 → 결과 확인
-   - 검증: 전체 플로우 30분 내 완료
+✅ T6.1.1: 완전한 사용자 여정 테스트 (비동기 워크플로우)
+   - 회원가입 → 로그인 → 파일 업로드(상태 완료 확인) → 워크플로우 실행 → SSE 스트림 기반 실시간 결과 확인
+   - 검증: 전체 플로우가 비동기적으로 문제 없이 완료되고, 최종 결과가 UI에 표시됨
 
 ✅ T6.1.2: 동시 사용자 테스트
    - 입력: 5명의 사용자가 동시에 워크플로우 실행
@@ -764,29 +772,30 @@ describe('WorkflowSelector', () => {
 *   [ ] **Task 6.1.2:** 핵심 사용자 플로우 E2E 테스트 작성
 ```typescript
 // e2e/user-journey.spec.ts
-test('complete user journey', async ({ page }) => {
+test('complete user journey with async workflow', async ({ page }) => {
   // 회원가입
   await page.goto('/signup');
-  await page.fill('[data-testid=email-input]', 'test@example.com');
+  await page.fill('[data-testid=email-input]', 'test-e2e@example.com');
   await page.fill('[data-testid=password-input]', 'password123');
   await page.click('[data-testid=signup-button]');
-  
-  // 대시보드 이동 확인
   await expect(page).toHaveURL('/dashboard');
-  
-  // 파일 업로드
+
+  // 파일 업로드 및 처리 완료 대기 (SSE 기반)
   await page.setInputFiles('[data-testid=file-upload]', 'test-document.pdf');
-  await expect(page.locator('[data-testid=upload-success]')).toBeVisible();
-  
-  // 워크플로우 실행
+  // UI가 SSE 이벤트를 받아 "업로드 완료" 상태를 표시할 때까지 대기
+  await expect(page.locator('[data-testid=upload-status-completed]')).toBeVisible({ timeout: 20000 });
+
+  // 워크플로우 실행 요청
   await page.fill('[data-testid=chat-input]', '/document-qa');
   await page.click('[data-testid=workflow-option]');
   await page.fill('[data-testid=chat-input]', 'What is this document about?');
   await page.click('[data-testid=send-button]');
-  
-  // 결과 확인
-  await expect(page.locator('[data-testid=ai-response]')).toBeVisible({ timeout: 30000 });
-  await expect(page.locator('[data-testid=feedback-buttons]')).toBeVisible();
+
+  // 워크플로우 최종 결과가 표시될 때까지 대기 (SSE 스트림 완료)
+  // AI 응답 컨테이너 내부에 최종 결과와 함께 피드백 버튼이 표시되는 것을 확인
+  const finalResponseLocator = page.locator('[data-testid=ai-response]:has([data-testid=feedback-buttons])');
+  await expect(finalResponseLocator).toBeVisible({ timeout: 60000 });
+  await expect(finalResponseLocator).toContainText('This document is about');
 });
 ```
 *   [ ] **Task 6.1.3:** 성능 테스트 및 최적화
